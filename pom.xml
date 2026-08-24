@@ -18,7 +18,7 @@
 
   <name>Jenkins Server Monitor</name>
   <description>在 Jenkins 首页顶部显示服务器 CPU、内存和磁盘使用情况。</description>
-  <url>https://github.com/qxhua/jenkins-server-monitor</url>
+  <url>https://github.com/liuzhenghang/jenkins-server-monitor</url>
 
   <properties>
     <!-- Parent 4.86 uses Java 11 as its baseline. It builds on JDK 17 and does not require JDK 21. -->
