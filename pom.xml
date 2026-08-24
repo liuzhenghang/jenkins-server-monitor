@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.jenkins-ci.plugins</groupId>
+    <artifactId>plugin</artifactId>
+    <version>4.86</version>
+    <relativePath/>
+  </parent>
+
+  <groupId>cn.qxhua.jenkins</groupId>
+  <artifactId>jenkins-server-monitor</artifactId>
+  <version>1.0.14</version>
+  <packaging>hpi</packaging>
+
+  <name>Jenkins Server Monitor</name>
+  <description>在 Jenkins 首页顶部显示服务器 CPU、内存和磁盘使用情况。</description>
+  <url>https://github.com/qxhua/jenkins-server-monitor</url>
+
+  <properties>
+    <!-- Parent 4.86 uses Java 11 as its baseline. It builds on JDK 17 and does not require JDK 21. -->
+    <maven.compiler.release>11</maven.compiler.release>
+    <maven.compiler.testRelease>11</maven.compiler.testRelease>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+  </properties>
+
+  <repositories>
+    <repository>
+      <id>jenkins</id>
+      <url>https://repo.jenkins-ci.org/public/</url>
+    </repository>
+  </repositories>
+
+  <pluginRepositories>
+    <pluginRepository>
+      <id>jenkins</id>
+      <url>https://repo.jenkins-ci.org/public/</url>
+    </pluginRepository>
+  </pluginRepositories>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.jenkins-ci.main</groupId>
+      <artifactId>jenkins-core</artifactId>
+      <version>${jenkins.version}</version>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
+</project>

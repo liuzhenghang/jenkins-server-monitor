@@ -1,0 +1,15 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="jelly:lib/form">
+  <f:section title="${%ServerMonitorConfiguration_SectionTitle}">
+    <f:entry title="${%ServerMonitorConfiguration_Enabled}" field="enabled">
+      <f:checkbox/>
+    </f:entry>
+    <f:entry title="${%ServerMonitorConfiguration_RefreshSeconds}" field="refreshSeconds">
+      <f:number min="2" max="60"/>
+    </f:entry>
+    <f:entry title="${%ServerMonitorConfiguration_DiskPath}" field="diskPath"
+             help="${%ServerMonitorConfiguration_DiskPathHelp}">
+      <f:textbox/>
+    </f:entry>
+  </f:section>
+</j:jelly>

@@ -1,0 +1,175 @@
+header#page-header,
+#page-header,
+#header {
+  position: relative;
+}
+
+#jenkins-server-monitor-navbar {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 2px 8px;
+  color: var(--text-color, #333);
+  font-size: 13px;
+  line-height: 1.2;
+  white-space: nowrap;
+  z-index: 5;
+}
+
+#jenkins-server-monitor-navbar .jenkins-server-monitor-grid {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#jenkins-server-monitor-navbar .jenkins-server-monitor-io {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: 4px;
+  padding-left: 10px;
+  border-left: 1px solid rgba(127, 127, 127, .28);
+  color: #68707b;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+#jenkins-server-monitor-navbar .jenkins-server-monitor-network,
+#jenkins-server-monitor-navbar .jenkins-server-monitor-diskio {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex: 0 0 auto;
+}
+
+#jenkins-server-monitor-navbar .jenkins-server-monitor-network {
+  width: 145px;
+}
+
+#jenkins-server-monitor-navbar .jenkins-server-monitor-diskio {
+  width: 330px;
+}
+
+#jenkins-server-monitor-navbar .io-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+}
+
+#jenkins-server-monitor-navbar .io-stack-separated {
+  padding-left: 9px;
+  border-left: 1px solid rgba(127, 127, 127, .28);
+}
+
+#jenkins-server-monitor-navbar .io-title {
+  color: var(--text-color, #333);
+  font-weight: 600;
+}
+
+#jenkins-server-monitor-navbar .jenkins-server-monitor-io b {
+  color: var(--text-color, #333);
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+#jenkins-server-monitor-navbar .jenkins-server-monitor-metric {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  width: 210px;
+  flex: 0 0 210px;
+  text-align: left;
+}
+
+#jenkins-server-monitor-navbar .jenkins-server-monitor-metric-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#jenkins-server-monitor-navbar .jenkins-server-monitor-metric-label {
+  width: 38px;
+  flex: 0 0 38px;
+}
+
+#jenkins-server-monitor-navbar .jenkins-server-monitor-progress {
+  flex: 1 1 auto;
+  min-width: 70px;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(127, 127, 127, .2);
+}
+
+#jenkins-server-monitor-navbar .jenkins-server-monitor-progress-fill {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: #409eff;
+  transition: width .45s cubic-bezier(.22, .61, .36, 1), background-color .25s ease;
+}
+
+#jenkins-server-monitor-navbar .jenkins-server-monitor-progress-fill.is-warning {
+  background: #e6a23c;
+}
+
+#jenkins-server-monitor-navbar .jenkins-server-monitor-progress-fill.is-critical {
+  background: #f56c6c;
+}
+
+#jenkins-server-monitor-navbar .jenkins-server-monitor-metric-value {
+  min-width: 48px;
+  color: var(--text-color, #333);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  text-align: right;
+}
+
+#jenkins-server-monitor-navbar .jenkins-server-monitor-metric-copy {
+  display: none;
+}
+
+#jenkins-server-monitor-navbar .jenkins-server-monitor-metric-label {
+  flex: 0 0 auto;
+  min-width: 34px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+#jenkins-server-monitor-navbar .jenkins-server-monitor-metric-detail {
+  color: #7d8590;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+/* Legacy ring selectors are kept harmless for cached markup from older versions. */
+#jenkins-server-monitor-navbar .jenkins-server-monitor-ring,
+#jenkins-server-monitor-navbar .jenkins-server-monitor-ring svg {
+  display: none;
+}
+
+/* Keep the monitoring groups compact when the header is narrow. */
+#jenkins-server-monitor-navbar .jenkins-server-monitor-grid {
+  gap: 12px;
+}
+
+/* The metric content itself is a progress-bar row plus one detail row. */
+#jenkins-server-monitor-navbar .jenkins-server-monitor-metric-copy {
+  min-width: 0;
+}
+
+@media (max-width: 620px) {
+  #jenkins-server-monitor-navbar {
+    display: none;
+  }
+}
