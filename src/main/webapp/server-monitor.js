@@ -3,6 +3,8 @@
 
   var PANEL_ID = 'jenkins-server-monitor-navbar';
   var LEGACY_PANEL_ID = 'jenkins-server-monitor-panel';
+  var INSTANCE_KEY = '__jenkinsServerMonitorInstance';
+  var REQUEST_TIMEOUT_MS = 10000;
   var TRANSLATIONS = {
     zh: {
       resource: '服务器资源监控', cpu: 'CPU', memory: '内存', storage: '存储',
@@ -164,29 +166,95 @@
     }
   }
 
-  function renderError(panel) {
+  function renderError(panel, t) {
     var state = panel.querySelector('[data-monitor-state]');
     if (state) {
-      state.textContent = '读取失败';
+      state.textContent = t.failed;
       state.className = 'jenkins-server-monitor-state is-error';
     }
   }
 
-  function fetchMetrics(panel, endpoint) {
-    fetch(endpoint, {
+  function isPanelAttached(panel) {
+    return !!(panel && panel.parentNode && document.documentElement.contains(panel));
+  }
+
+  function scheduleNext(instance) {
+    if (instance.stopped || instance.paused || instance.timerId !== null) {
+      return;
+    }
+    instance.timerId = window.setTimeout(function () {
+      instance.timerId = null;
+      fetchMetrics(instance);
+    }, instance.refreshSeconds * 1000);
+  }
+
+  function finishRequest(instance, controller) {
+    if (instance.requestTimeoutId !== null) {
+      window.clearTimeout(instance.requestTimeoutId);
+      instance.requestTimeoutId = null;
+    }
+    if (instance.controller === controller) {
+      instance.controller = null;
+    }
+    instance.requestInFlight = false;
+
+    if (instance.stopped || instance.paused) {
+      return;
+    }
+    if (!isPanelAttached(instance.panel)) {
+      instance.stop();
+      return;
+    }
+    scheduleNext(instance);
+  }
+
+  function fetchMetrics(instance) {
+    if (instance.stopped || instance.paused || instance.requestInFlight) {
+      return;
+    }
+    if (!isPanelAttached(instance.panel)) {
+      instance.stop();
+      return;
+    }
+
+    var controller = typeof window.AbortController === 'function'
+      ? new window.AbortController()
+      : null;
+    var requestOptions = {
       method: 'GET',
       credentials: 'same-origin',
       cache: 'no-store',
       headers: { 'Accept': 'application/json' }
-    }).then(function (response) {
+    };
+    if (controller) {
+      requestOptions.signal = controller.signal;
+    }
+
+    instance.requestInFlight = true;
+    instance.controller = controller;
+    if (controller) {
+      instance.requestTimeoutId = window.setTimeout(function () {
+        controller.abort();
+      }, REQUEST_TIMEOUT_MS);
+    }
+
+    fetch(instance.endpoint, requestOptions).then(function (response) {
       if (!response.ok) {
         throw new Error('HTTP ' + response.status);
       }
       return response.json();
     }).then(function (data) {
-      render(panel, data);
-    }).catch(function () {
-      renderError(panel);
+      if (!instance.stopped) {
+        render(instance.panel, data);
+      }
+    }, function (error) {
+      if (!instance.stopped && (!error || error.name !== 'AbortError')) {
+        renderError(instance.panel, instance.panel.monitorText);
+      }
+    }).then(function () {
+      finishRequest(instance, controller);
+    }, function () {
+      finishRequest(instance, controller);
     });
   }
 
@@ -196,6 +264,17 @@
     if (legacyPanel) {
       legacyPanel.remove();
     }
+
+    var existingInstance = window[INSTANCE_KEY];
+    if (existingInstance) {
+      if (isPanelAttached(existingInstance.panel)) {
+        return;
+      }
+      if (existingInstance.stop) {
+        existingInstance.stop();
+      }
+    }
+
     if (!configuration || document.getElementById(PANEL_ID)) {
       return;
     }
@@ -209,11 +288,66 @@
     var panel = createPanel(translations);
     panel.monitorText = translations;
     target.appendChild(panel);
-    fetchMetrics(panel, configuration.endpoint);
-    // Poll immediately once, then keep the Navbar values fresh automatically.
-    window.setInterval(function () {
-      fetchMetrics(panel, configuration.endpoint);
-    }, configuration.refreshSeconds * 1000);
+
+    var instance = {
+      panel: panel,
+      endpoint: configuration.endpoint,
+      refreshSeconds: configuration.refreshSeconds,
+      timerId: null,
+      requestTimeoutId: null,
+      controller: null,
+      requestInFlight: false,
+      paused: !!document.hidden,
+      stopped: false,
+      visibilityHandler: null,
+      stop: null
+    };
+
+    instance.stop = function () {
+      if (instance.stopped) {
+        return;
+      }
+      instance.stopped = true;
+      if (instance.timerId !== null) {
+        window.clearTimeout(instance.timerId);
+        instance.timerId = null;
+      }
+      if (instance.requestTimeoutId !== null) {
+        window.clearTimeout(instance.requestTimeoutId);
+        instance.requestTimeoutId = null;
+      }
+      if (instance.controller) {
+        instance.controller.abort();
+        instance.controller = null;
+      }
+      if (instance.visibilityHandler) {
+        document.removeEventListener('visibilitychange', instance.visibilityHandler);
+      }
+      if (window[INSTANCE_KEY] === instance) {
+        delete window[INSTANCE_KEY];
+      }
+    };
+
+    instance.visibilityHandler = function () {
+      if (document.hidden) {
+        instance.paused = true;
+        if (instance.timerId !== null) {
+          window.clearTimeout(instance.timerId);
+          instance.timerId = null;
+        }
+        if (instance.controller) {
+          instance.controller.abort();
+        }
+      } else if (!instance.stopped) {
+        instance.paused = false;
+        fetchMetrics(instance);
+      }
+    };
+
+    window[INSTANCE_KEY] = instance;
+    document.addEventListener('visibilitychange', instance.visibilityHandler);
+    // Poll immediately once, then schedule the next request after completion.
+    fetchMetrics(instance);
   }
 
   if (document.readyState === 'loading') {

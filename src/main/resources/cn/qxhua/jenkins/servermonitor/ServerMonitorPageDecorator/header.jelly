@@ -4,8 +4,8 @@
     <meta name="jenkins-server-monitor-root-url" content="${rootURL}"/>
     <meta name="jenkins-server-monitor-refresh" content="${it.refreshSeconds}"/>
     <link rel="stylesheet" type="text/css"
-          href="${rootURL}/plugin/jenkins-server-monitor/server-monitor.css?v=1.0.14"/>
+          href="${rootURL}/plugin/jenkins-server-monitor/server-monitor.css?v=1.0.15"/>
     <script type="text/javascript"
-            src="${rootURL}/plugin/jenkins-server-monitor/server-monitor.js?v=1.0.14"></script>
+            src="${rootURL}/plugin/jenkins-server-monitor/server-monitor.js?v=1.0.15"></script>
   </j:if>
 </j:jelly>

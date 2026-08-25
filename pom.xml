@@ -13,7 +13,7 @@
 
   <groupId>cn.qxhua.jenkins</groupId>
   <artifactId>jenkins-server-monitor</artifactId>
-  <version>1.0.14</version>
+  <version>1.0.15</version>
   <packaging>hpi</packaging>
 
   <name>Jenkins Server Monitor</name>
