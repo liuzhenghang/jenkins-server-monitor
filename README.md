@@ -2,6 +2,12 @@
 
 Jenkins 插件，在 Jenkins 顶部 Navbar 区域显示 Jenkins 所在服务器的 CPU、内存、存储、网络和磁盘 IO 情况。
 
+## 界面预览
+
+![Jenkins Server Monitor 首页效果](docs/server-monitor-demo.png)
+
+截图中的项目、视图和构建节点名称已脱敏，监控信息保留为实际展示效果。
+
 ## 功能
 
 - 顶部 Navbar 区域以固定宽度的 Element 风格进度条显示 CPU、内存、存储使用率
