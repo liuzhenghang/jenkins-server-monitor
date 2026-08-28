@@ -15,10 +15,16 @@ header#page-header,
   margin: 0;
   padding: 2px 8px;
   color: var(--text-color, #333);
+  font-family: Inter, "SF Pro Display", "Segoe UI Variable", "Segoe UI",
+    "PingFang SC", "Noto Sans SC", "Microsoft YaHei", system-ui, sans-serif;
   font-size: 13px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
   line-height: 1.2;
   white-space: nowrap;
   z-index: 5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 #jenkins-server-monitor-navbar .jenkins-server-monitor-grid {
@@ -59,7 +65,38 @@ header#page-header,
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 3px;
+  gap: 4px;
+}
+
+#jenkins-server-monitor-navbar .io-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 16px;
+}
+
+#jenkins-server-monitor-navbar .jenkins-server-monitor-network-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  border-radius: 4px;
+}
+
+#jenkins-server-monitor-navbar .jenkins-server-monitor-network-icon svg {
+  display: block;
+  width: 15px;
+  height: 15px;
+}
+
+#jenkins-server-monitor-navbar .jenkins-server-monitor-network-icon.is-upload {
+  color: #3678e8;
+}
+
+#jenkins-server-monitor-navbar .jenkins-server-monitor-network-icon.is-download {
+  color: #12a579;
 }
 
 #jenkins-server-monitor-navbar .io-stack-separated {
@@ -69,7 +106,8 @@ header#page-header,
 
 #jenkins-server-monitor-navbar .io-title {
   color: var(--text-color, #333);
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: 0;
 }
 
 #jenkins-server-monitor-navbar .jenkins-server-monitor-io b {
@@ -77,6 +115,7 @@ header#page-header,
   font-variant-numeric: tabular-nums;
   font-size: 13px;
   font-weight: 600;
+  letter-spacing: -0.015em;
 }
 
 #jenkins-server-monitor-navbar .jenkins-server-monitor-metric {

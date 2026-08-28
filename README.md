@@ -2,12 +2,6 @@
 
 Jenkins 插件，在 Jenkins 顶部 Navbar 区域显示 Jenkins 所在服务器的 CPU、内存、存储、网络和磁盘 IO 情况。
 
-## 界面预览
-
-![Jenkins Server Monitor 首页效果](docs/server-monitor-demo.png)
-
-截图中的项目、视图和构建节点名称已脱敏，监控信息保留为实际展示效果。
-
 ## 功能
 
 - 顶部 Navbar 区域以固定宽度的 Element 风格进度条显示 CPU、内存、存储使用率
@@ -18,6 +12,8 @@ Jenkins 插件，在 Jenkins 顶部 Navbar 区域显示 Jenkins 所在服务器�
 - Linux 优先读取 `/proc/meminfo`，按可回收缓存/缓冲区修正内存使用率，参考宝塔等服务器面板的统计口径
 - 磁盘路径支持绝对路径，也支持相对于 Jenkins 主目录的路径
 - 显示网络上传/下载速率，以及磁盘读取、写入、IOPS 和 IO 延迟
+- 网络上行/下行使用内嵌的简洁 SVG 方向图标，磁盘无读写时显示 `0 B`
+- 监控区域使用 Inter、SF Pro、Segoe UI 等现代系统字体回退栈，数字采用等宽数字特性减少跳动
 - 支持中文和英文，跟随 Jenkins 页面语言或浏览器语言显示
 - 通过 Jenkins `PageDecorator`、`RootAction` 和 `GlobalConfiguration` 扩展点实现，不修改 Jenkins 核心文件
 - 状态接口要求当前用户具备 `Overall/Read` 权限

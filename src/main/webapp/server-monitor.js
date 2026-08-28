@@ -62,8 +62,10 @@
         metricMarkup('disk', t.storage) + '</div>' +
       '<div class="jenkins-server-monitor-io">' +
         '<div class="jenkins-server-monitor-network"><span class="io-title">' + t.network + '</span>' +
-          '<span class="io-stack"><span>⬆️ ' + t.upload + ' <b data-network-upload>0 B/s</b></span>' +
-          '<span>⬇️ ' + t.download + ' <b data-network-download>0 B/s</b></span></span>' +
+          '<span class="io-stack">' +
+            '<span class="io-row">' + networkDirectionIcon('upload', t.upload) + '<b data-network-upload>0 B/s</b></span>' +
+            '<span class="io-row">' + networkDirectionIcon('download', t.download) + '<b data-network-download>0 B/s</b></span>' +
+          '</span>' +
         '</div>' +
         '<div class="jenkins-server-monitor-diskio"><span class="io-title">' + t.disk + '</span>' +
           '<span class="io-stack"><span>' + t.read + ' <b data-disk-read>0 B</b></span>' +
@@ -73,6 +75,18 @@
         '</div>' +
       '</div>';
     return panel;
+  }
+
+  // Direction icons are adapted from Lucide's ArrowUpFromLine and ArrowDownToLine.
+  function networkDirectionIcon(direction, label) {
+    var paths = direction === 'upload'
+      ? '<path d="m18 9-6-6-6 6"></path><path d="M12 3v14"></path><path d="M5 21h14"></path>'
+      : '<path d="M12 17V3"></path><path d="m6 11 6 6 6-6"></path><path d="M5 21h14"></path>';
+    return '<span class="jenkins-server-monitor-network-icon is-' + direction + '"' +
+      ' role="img" aria-label="' + label + '" title="' + label + '">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"' +
+      ' stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"' +
+      ' aria-hidden="true" focusable="false">' + paths + '</svg></span>';
   }
 
   function metricMarkup(key, label) {
@@ -111,8 +125,12 @@
   }
 
   function formatRate(bytes, t) {
-    if (!isNumber(bytes) || bytes <= 0) return '0 B';
-    return formatBytes(bytes, t).replace(' ', '') + '/s';
+    if (!isNumber(bytes) || bytes <= 0) return '0 B/s';
+    return formatBytes(bytes, t) + '/s';
+  }
+
+  function formatIoBytes(bytes, t) {
+    return !isNumber(bytes) || bytes <= 0 ? '0 B' : formatBytes(bytes, t);
   }
 
   function setText(panel, selector, value) {
@@ -150,8 +168,8 @@
       formatBytes(data.diskFreeBytes, t) + ' ' + t.available + ' / ' + formatBytes(data.diskTotalBytes, t), t);
     setText(panel, '[data-network-upload]', formatRate(data.networkUploadBytesPerSecond, t));
     setText(panel, '[data-network-download]', formatRate(data.networkDownloadBytesPerSecond, t));
-    setText(panel, '[data-disk-read]', formatBytes(data.diskReadBytesPerSecond, t));
-    setText(panel, '[data-disk-write]', formatBytes(data.diskWriteBytesPerSecond, t));
+    setText(panel, '[data-disk-read]', formatIoBytes(data.diskReadBytesPerSecond, t));
+    setText(panel, '[data-disk-write]', formatIoBytes(data.diskWriteBytesPerSecond, t));
     setText(panel, '[data-disk-iops]', isNumber(data.diskIops) ? data.diskIops.toFixed(0) : '0');
     setText(panel, '[data-disk-latency]', (isNumber(data.diskIoLatencyMillis) ? data.diskIoLatencyMillis.toFixed(0) : '0') + ' ms');
 
