@@ -5,6 +5,7 @@
   var LEGACY_PANEL_ID = 'jenkins-server-monitor-panel';
   var INSTANCE_KEY = '__jenkinsServerMonitorInstance';
   var REQUEST_TIMEOUT_MS = 10000;
+  var HEADER_SAFE_GAP = 12;
   var TRANSLATIONS = {
     zh: {
       resource: '服务器资源监控', cpu: 'CPU', memory: '内存', storage: '存储',
@@ -276,6 +277,104 @@
     });
   }
 
+  function isVisible(element) {
+    var style = window.getComputedStyle(element);
+    if (style.display === 'none' || style.visibility === 'hidden' || Number(style.opacity) === 0) {
+      return false;
+    }
+    var rect = element.getBoundingClientRect();
+    return rect.width > 0 && rect.height > 0;
+  }
+
+  function findHeaderPosition(instance) {
+    var header = instance.header;
+    var panel = instance.panel;
+    var headerRect = header.getBoundingClientRect();
+    var panelWidth = panel.getBoundingClientRect().width;
+    var viewportWidth = document.documentElement.clientWidth;
+    var start = Math.max(8, headerRect.left + 8);
+    var end = Math.min(viewportWidth - 8, headerRect.right - 8);
+    var preferred = (viewportWidth - panelWidth) / 2;
+    var blocked = [];
+
+    function reserve(rect) {
+      if (rect.width > 0 && rect.height > 0 && rect.bottom > headerRect.top &&
+          rect.top < headerRect.bottom && rect.right > start && rect.left < end) {
+        blocked.push([rect.left - HEADER_SAFE_GAP, rect.right + HEADER_SAFE_GAP]);
+      }
+    }
+
+    // Breadcrumbs can contain plain text as well as links.
+    header.querySelectorAll('a, button, input, select, textarea, [role="button"], img, svg, summary')
+      .forEach(function (element) {
+        if (isVisible(element)) reserve(element.getBoundingClientRect());
+      });
+    var walker = document.createTreeWalker(header, window.NodeFilter.SHOW_TEXT);
+    var range = document.createRange();
+    while (walker.nextNode()) {
+      var node = walker.currentNode;
+      if (node.textContent.trim() && isVisible(node.parentElement)) {
+        range.selectNodeContents(node);
+        reserve(range.getBoundingClientRect());
+      }
+    }
+    blocked.sort(function (a, b) { return a[0] - b[0]; });
+    var best = null;
+    blocked.concat([[end, end]]).forEach(function (interval) {
+      var last = Math.min(interval[0], end) - panelWidth;
+      if (last >= start) {
+        var candidate = Math.max(start, Math.min(preferred, last));
+        if (best === null || Math.abs(candidate - preferred) < Math.abs(best - preferred)) {
+          best = candidate;
+        }
+      }
+      start = Math.max(start, interval[1]);
+    });
+    return best === null ? null : best + panelWidth / 2;
+  }
+
+  function setFloating(instance, headerRect) {
+    var panel = instance.panel;
+    panel.classList.add('is-floating');
+    panel.style.left = '';
+    panel.style.top = Math.max(12, headerRect.bottom + HEADER_SAFE_GAP) + 'px';
+  }
+
+  function updatePosition(instance) {
+    if (instance.stopped || !isPanelAttached(instance.panel)) {
+      return;
+    }
+    if (!document.documentElement.contains(instance.header)) {
+      instance.stop();
+      return;
+    }
+
+    var headerRect = instance.header.getBoundingClientRect();
+    if (window.scrollY > 0) {
+      setFloating(instance, headerRect);
+      return;
+    }
+
+    instance.panel.classList.remove('is-floating');
+    var left = findHeaderPosition(instance);
+    if (left === null) {
+      setFloating(instance, headerRect);
+      return;
+    }
+    instance.panel.style.left = left + 'px';
+    instance.panel.style.top = (headerRect.top + headerRect.height / 2) + 'px';
+  }
+
+  function schedulePosition(instance) {
+    if (instance.stopped || instance.positionFrameId !== null) {
+      return;
+    }
+    instance.positionFrameId = window.requestAnimationFrame(function () {
+      instance.positionFrameId = null;
+      updatePosition(instance);
+    });
+  }
+
   function mount() {
     var configuration = getConfiguration();
     var legacyPanel = document.getElementById(LEGACY_PANEL_ID);
@@ -305,19 +404,25 @@
     var translations = getTranslations();
     var panel = createPanel(translations);
     panel.monitorText = translations;
-    target.appendChild(panel);
+    document.body.appendChild(panel);
 
     var instance = {
       panel: panel,
+      header: target,
       endpoint: configuration.endpoint,
       refreshSeconds: configuration.refreshSeconds,
       timerId: null,
+      positionFrameId: null,
       requestTimeoutId: null,
       controller: null,
       requestInFlight: false,
       paused: !!document.hidden,
       stopped: false,
       visibilityHandler: null,
+      scrollHandler: null,
+      resizeHandler: null,
+      resizeObserver: null,
+      mutationObserver: null,
       stop: null
     };
 
@@ -334,12 +439,31 @@
         window.clearTimeout(instance.requestTimeoutId);
         instance.requestTimeoutId = null;
       }
+      if (instance.positionFrameId !== null) {
+        window.cancelAnimationFrame(instance.positionFrameId);
+        instance.positionFrameId = null;
+      }
       if (instance.controller) {
         instance.controller.abort();
         instance.controller = null;
       }
       if (instance.visibilityHandler) {
         document.removeEventListener('visibilitychange', instance.visibilityHandler);
+      }
+      if (instance.scrollHandler) {
+        window.removeEventListener('scroll', instance.scrollHandler);
+      }
+      if (instance.resizeHandler) {
+        window.removeEventListener('resize', instance.resizeHandler);
+      }
+      if (instance.resizeObserver) {
+        instance.resizeObserver.disconnect();
+      }
+      if (instance.mutationObserver) {
+        instance.mutationObserver.disconnect();
+      }
+      if (panel.parentNode) {
+        panel.remove();
       }
       if (window[INSTANCE_KEY] === instance) {
         delete window[INSTANCE_KEY];
@@ -362,8 +486,30 @@
       }
     };
 
+    instance.scrollHandler = function () {
+      schedulePosition(instance);
+    };
+    instance.resizeHandler = function () {
+      schedulePosition(instance);
+    };
+
+    if (typeof window.ResizeObserver === 'function') {
+      instance.resizeObserver = new window.ResizeObserver(instance.resizeHandler);
+      instance.resizeObserver.observe(target);
+    }
+    if (typeof window.MutationObserver === 'function') {
+      instance.mutationObserver = new window.MutationObserver(instance.resizeHandler);
+      instance.mutationObserver.observe(target, {
+        childList: true, subtree: true, characterData: true, attributes: true,
+        attributeFilter: ['class', 'style', 'hidden', 'open']
+      });
+    }
+
     window[INSTANCE_KEY] = instance;
     document.addEventListener('visibilitychange', instance.visibilityHandler);
+    window.addEventListener('scroll', instance.scrollHandler, { passive: true });
+    window.addEventListener('resize', instance.resizeHandler);
+    updatePosition(instance);
     // Poll immediately once, then schedule the next request after completion.
     fetchMetrics(instance);
   }

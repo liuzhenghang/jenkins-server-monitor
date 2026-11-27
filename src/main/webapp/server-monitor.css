@@ -1,13 +1,9 @@
-header#page-header,
-#page-header,
-#header {
-  position: relative;
-}
-
 #jenkins-server-monitor-navbar {
-  position: absolute;
+  box-sizing: border-box;
+  position: fixed;
   top: 50%;
   left: 50%;
+  width: max-content;
   transform: translate(-50%, -50%);
   display: flex;
   align-items: center;
@@ -25,6 +21,54 @@ header#page-header,
   z-index: 5;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+}
+
+/* Float the dashboard after scrolling. The translucent surface keeps the page
+   visible underneath while the blur and highlight create a liquid-glass feel. */
+#jenkins-server-monitor-navbar.is-floating {
+  --monitor-glass-text: #222630;
+  --monitor-glass-detail: #444b57;
+  --monitor-glass-surface: rgba(255, 255, 255, .5);
+  --monitor-glass-edge: rgba(255, 255, 255, .58);
+  --monitor-glass-highlight: rgba(255, 255, 255, .62);
+  top: 12px;
+  left: 50%;
+  z-index: 1000;
+  max-width: calc(100vw - 24px);
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 10px 16px;
+  transform: translateX(-50%);
+  border: 1px solid var(--monitor-glass-edge);
+  border-radius: 28px;
+  background: var(--monitor-glass-surface);
+  color: var(--monitor-glass-text);
+  box-shadow: 0 12px 36px rgba(18, 28, 45, .18),
+    inset 0 1px 0 var(--monitor-glass-highlight);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  pointer-events: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  #jenkins-server-monitor-navbar.is-floating {
+    --monitor-glass-text: #f3f4f6;
+    --monitor-glass-detail: #e1e4e9;
+    --monitor-glass-surface: rgba(30, 31, 35, .5);
+    --monitor-glass-edge: rgba(255, 255, 255, .18);
+    --monitor-glass-highlight: rgba(255, 255, 255, .16);
+  }
+}
+
+#jenkins-server-monitor-navbar.is-floating .jenkins-server-monitor-io,
+#jenkins-server-monitor-navbar.is-floating .jenkins-server-monitor-metric-detail {
+  color: var(--monitor-glass-detail);
+}
+
+#jenkins-server-monitor-navbar.is-floating .io-title,
+#jenkins-server-monitor-navbar.is-floating .jenkins-server-monitor-io b,
+#jenkins-server-monitor-navbar.is-floating .jenkins-server-monitor-metric-value {
+  color: var(--monitor-glass-text);
 }
 
 #jenkins-server-monitor-navbar .jenkins-server-monitor-grid {
@@ -188,6 +232,8 @@ header#page-header,
 #jenkins-server-monitor-navbar .jenkins-server-monitor-metric-detail {
   color: #7d8590;
   font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
@@ -207,8 +253,100 @@ header#page-header,
   min-width: 0;
 }
 
-@media (max-width: 620px) {
+@media (max-width: 1600px) and (min-width: 621px) {
+  #jenkins-server-monitor-navbar .jenkins-server-monitor-metric {
+    width: 170px;
+    flex-basis: 170px;
+  }
+
+  #jenkins-server-monitor-navbar .jenkins-server-monitor-network {
+    width: 125px;
+  }
+
+  #jenkins-server-monitor-navbar .jenkins-server-monitor-diskio {
+    width: 280px;
+  }
+}
+
+@media (max-width: 1200px) and (min-width: 621px) {
+  #jenkins-server-monitor-navbar .jenkins-server-monitor-grid {
+    gap: 8px;
+  }
+
+  #jenkins-server-monitor-navbar .jenkins-server-monitor-metric {
+    width: 135px;
+    flex-basis: 135px;
+  }
+
+  #jenkins-server-monitor-navbar .jenkins-server-monitor-progress {
+    min-width: 42px;
+  }
+
+  #jenkins-server-monitor-navbar .jenkins-server-monitor-network {
+    width: 110px;
+  }
+
+  #jenkins-server-monitor-navbar .jenkins-server-monitor-diskio {
+    width: 250px;
+  }
+
+  #jenkins-server-monitor-navbar .jenkins-server-monitor-io,
+  #jenkins-server-monitor-navbar .jenkins-server-monitor-io b {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 900px) {
   #jenkins-server-monitor-navbar {
-    display: none;
+    gap: 6px;
+    padding-right: 8px;
+    padding-left: 8px;
+    font-size: 12px;
+  }
+
+  #jenkins-server-monitor-navbar .jenkins-server-monitor-grid {
+    gap: 5px;
+  }
+
+  #jenkins-server-monitor-navbar .jenkins-server-monitor-metric {
+    width: 110px;
+    flex-basis: 110px;
+  }
+
+  #jenkins-server-monitor-navbar .jenkins-server-monitor-progress {
+    min-width: 10px;
+  }
+
+  #jenkins-server-monitor-navbar .jenkins-server-monitor-metric-value {
+    min-width: 40px;
+  }
+
+  #jenkins-server-monitor-navbar .jenkins-server-monitor-network {
+    width: 96px;
+  }
+
+  #jenkins-server-monitor-navbar .jenkins-server-monitor-diskio {
+    width: 220px;
+  }
+
+  #jenkins-server-monitor-navbar .jenkins-server-monitor-io {
+    gap: 5px;
+    margin-left: 2px;
+    padding-left: 6px;
+  }
+}
+
+@media (max-width: 760px) {
+  #jenkins-server-monitor-navbar.is-floating .jenkins-server-monitor-grid,
+  #jenkins-server-monitor-navbar.is-floating .jenkins-server-monitor-io {
+    max-width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  #jenkins-server-monitor-navbar.is-floating .jenkins-server-monitor-io {
+    margin: 0;
+    padding: 0;
+    border: 0;
   }
 }
